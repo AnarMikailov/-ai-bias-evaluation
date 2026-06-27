@@ -282,6 +282,71 @@ if 'b' in st.session_state:
         if not (pp_u != pp_u):
             st.metric("Predictive Parity Diff.", f"{pp_u:.3f}")
 
+    # ── Confusion Matrix ───────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("## 🔲 Konfuziya Matrisi")
+    st.caption("Modelin hər kateqoriya üçün düzgün və yanlış proqnozlarının tam bölgüsü.")
+
+    _b_cm = b.get('confusion_matrix')
+    _u_cm = u.get('confusion_matrix')
+
+    if _b_cm and _u_cm:
+        def _cm_fig(cm, colorscale, title):
+            tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
+            total = tn + fp + fn + tp
+            _z    = [[tn, fp], [fn, tp]]
+            _text = [
+                [f"TN\n{tn:,}\n({tn/total:.1%})", f"FP\n{fp:,}\n({fp/total:.1%})"],
+                [f"FN\n{fn:,}\n({fn/total:.1%})", f"TP\n{tp:,}\n({tp/total:.1%})"],
+            ]
+            fig = go.Figure(go.Heatmap(
+                z=_z,
+                x=['Proqnoz: Mənfi', 'Proqnoz: Müsbət'],
+                y=['Həqiqi: Mənfi', 'Həqiqi: Müsbət'],
+                colorscale=colorscale,
+                showscale=False,
+                text=_text,
+                texttemplate="%{text}",
+                textfont=dict(size=13, color='white'),
+            ))
+            fig.update_layout(
+                title=dict(text=title, font=dict(size=14)),
+                height=320,
+                margin=dict(l=10, r=10, t=45, b=10),
+                xaxis=dict(tickfont=dict(size=11)),
+                yaxis=dict(tickfont=dict(size=11), autorange='reversed'),
+            )
+            return fig
+
+        cm1, cm2 = st.columns(2, gap="large")
+        with cm1:
+            st.plotly_chart(
+                _cm_fig(_b_cm, [[0,'#ef9a9a'],[1,'#b71c1c']], '🔴 Qərəzli Model'),
+                use_container_width=True
+            )
+        with cm2:
+            st.plotly_chart(
+                _cm_fig(_u_cm, [[0,'#a5d6a7'],[1,'#1b5e20']], '🟢 Qərəzsiz Model'),
+                use_container_width=True
+            )
+
+        _b_tn, _b_fp, _b_fn, _b_tp = _b_cm[0][0], _b_cm[0][1], _b_cm[1][0], _b_cm[1][1]
+        _u_tn, _u_fp, _u_fn, _u_tp = _u_cm[0][0], _u_cm[0][1], _u_cm[1][0], _u_cm[1][1]
+        _fp_diff = _b_fp - _u_fp
+        _fn_diff = _b_fn - _u_fn
+
+        _fp_txt = f"**Yanlış Müsbət (FP)** qərəzsiz modeldə {'azaldı' if _fp_diff > 0 else 'artdı'} ({_b_fp:,} → {_u_fp:,}, {'−' if _fp_diff>0 else '+'}{abs(_fp_diff):,})."
+        _fn_txt = f"**Yanlış Mənfi (FN)** qərəzsiz modeldə {'azaldı' if _fn_diff > 0 else 'artdı'} ({_b_fn:,} → {_u_fn:,}, {'−' if _fn_diff>0 else '+'}{abs(_fn_diff):,})."
+
+        if _fp_diff > 0 and _fn_diff > 0:
+            _verdict = "Hər iki xəta növü azaldı — qərəzsizləşdirmə tam uğurludur."
+        elif _fp_diff > 0 or _fn_diff > 0:
+            _verdict = "Bir xəta növü azalıb, digəri artıb — bu fairness-accuracy tradeoff-un tipik nümunəsidir."
+        else:
+            _verdict = "Xəta sayı artıb — lakin hər iki qrup arasında bölgü daha ədalətlidir."
+
+        st.info(f"{_fp_txt}\n\n{_fn_txt}\n\n{_verdict}")
+
     st.markdown("---")
 
     # ── Bar chart ──────────────────────────────────────────────────────────
