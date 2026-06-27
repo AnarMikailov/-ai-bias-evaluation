@@ -10,7 +10,7 @@ except AttributeError:
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score
 from aif360.datasets import BinaryLabelDataset
 from aif360.metrics import BinaryLabelDatasetMetric, ClassificationMetric
 from aif360.algorithms.preprocessing import Reweighing
@@ -212,11 +212,6 @@ def analyze_from_csvs(biased_df: pd.DataFrame, unbiased_df: pd.DataFrame):
     unbiased['accuracy'] = u_acc
     biased['config']     = cfg
     unbiased['config']   = cfg
-
-    b_cm = confusion_matrix(b_test.labels.ravel(), b_pred.labels.ravel())
-    u_cm = confusion_matrix(u_test.labels.ravel(), u_pred.labels.ravel())
-    biased['confusion_matrix']   = b_cm.tolist()
-    unbiased['confusion_matrix'] = u_cm.tolist()
 
     # SHAP
     biased['shap']   = _compute_shap(b_model, b_scaler, b_train, b_test)
