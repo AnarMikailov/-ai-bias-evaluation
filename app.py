@@ -476,60 +476,6 @@ if 'b' in st.session_state:
             "orta təsirini göstərir. İki modelin ən vacib xüsusiyyətlərini müqayisə "
             "etmək — qərəzin haradan gəldiyini anlamağa kömək edir."
         )
-
-        # ── SHAP Fərq Analizi ─────────────────────────────────────────────
-        st.markdown("---")
-        st.markdown("### 📊 SHAP Fərq Analizi")
-        st.caption("Qərəzsizləşdirmədən sonra hər xüsusiyyətin əhəmiyyətinin dəyişməsi (Qərəzsiz − Qərəzli).")
-
-        _b_map = dict(zip(b_shap['features'], b_shap['importance']))
-        _u_map = dict(zip(u_shap['features'], u_shap['importance']))
-        _all_feats = sorted(set(_b_map) | set(_u_map))
-        _diffs = {f: round(_u_map.get(f, 0.0) - _b_map.get(f, 0.0), 4) for f in _all_feats}
-        _sorted_feats = sorted(_diffs, key=lambda f: abs(_diffs[f]), reverse=True)
-        _diff_vals = [_diffs[f] for f in _sorted_feats]
-
-        _bar_colors = ['#1565C0' if v >= 0 else '#90CAF9' for v in _diff_vals]
-
-        _fig_diff = go.Figure(go.Bar(
-            x=_diff_vals[::-1],
-            y=_sorted_feats[::-1],
-            orientation='h',
-            marker_color=_bar_colors[::-1],
-            text=[f"{v:+.4f}" for v in _diff_vals[::-1]],
-            textposition='outside',
-        ))
-        _fig_diff.add_vline(x=0, line_color='gray', line_width=1, line_dash='dot')
-        _fig_diff.update_layout(
-            height=max(380, len(_sorted_feats) * 28),
-            margin=dict(l=10, r=90, t=10, b=10),
-            xaxis_title="SHAP Fərqi (Qərəzsiz − Qərəzli)",
-            yaxis=dict(tickfont=dict(size=11)),
-            showlegend=False,
-        )
-        st.plotly_chart(_fig_diff, use_container_width=True)
-
-        _top_inc = [(f, _diffs[f]) for f in _sorted_feats if _diffs[f] > 0][:2]
-        _top_dec = [(f, _diffs[f]) for f in _sorted_feats if _diffs[f] < 0][:2]
-        _inc_txt = ', '.join([f"**{f}** ({v:+.4f})" for f, v in _top_inc]) if _top_inc else "—"
-        _dec_txt = ', '.join([f"**{f}** ({v:+.4f})" for f, v in _top_dec]) if _top_dec else "—"
-
-        _protected = cfg.get('protected', '')
-        _prot_diff = _diffs.get(_protected)
-        _prot_txt  = ''
-        if _prot_diff is not None and abs(_prot_diff) > 0.005:
-            _dir = "artıb" if _prot_diff > 0 else "azalıb"
-            _prot_txt = (f" Qorunan atribut `{_protected}` qərəzsiz modeldə "
-                         f"{_dir} ({_prot_diff:+.4f}) — bu qərəzin mənbəyinə birbaşa işarədir.")
-
-        st.info(
-            f"Ən çox **artan** xüsusiyyətlər: {_inc_txt}.\n\n"
-            f"Ən çox **azalan** xüsusiyyətlər: {_dec_txt}.\n\n"
-            f"Tünd mavi sütun (müsbət) — qərəzsiz modeldə həmin xüsusiyyətin təsiri artıb; "
-            f"açıq mavi (mənfi) — azalıb. Bu dəyişikliklər modelin qərəzsizləşmə zamanı "
-            f"hansı məlumat mənbələrinə daha çox güvəndiyini göstərir.{_prot_txt}"
-        )
-
     else:
         err = b_shap.get('error', 'Naməlum xəta')
         st.warning(f"SHAP hesablanmadı: {err}")
