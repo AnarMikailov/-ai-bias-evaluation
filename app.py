@@ -33,12 +33,12 @@ def _dataset_info(df, filename=""):
 
     if is_compas:
         protected    = 'race (Irq)'
-        label        = 'yeniden_cinayat (Yeniden cinayat etme)'
+        label        = 'yeniden_cinayat (Yenidən cinayət etmə)'
         priv_grp     = 'Caucasian'
         unpriv_grp   = 'African-American'
-        task         = 'Mahkumun 2 il erzinde yeniden cinayat edib-etmeyeceyini proqnozlasdir'
-        source       = 'ProPublica (2016) — "Machine Bias" arashdirmasi'
-        bias_type    = 'Irqi qerez — AA mehkumlar Caucasian mehkumlara nisbet 2x yuksek risk etiketlenir'
+        task         = 'Məhkumun 2 il ərzində yenidən cinayət edib-etməyəcəyini proqnozlaşdır'
+        source       = 'ProPublica (2016) — "Machine Bias" araşdırması'
+        bias_type    = 'İrqi qərəz — AA məhkumlar Caucasian məhkumlara nisbət 2x yüksək risk etiketlənir'
         priv_rate    = f"{(df[df['race']=='Caucasian']['yeniden_cinayat'].mean()*100):.1f}%"
         unpriv_rate  = f"{(df[df['race']=='African-American']['yeniden_cinayat'].mean()*100):.1f}%"
         rate_label   = 'Yeniden cinayat nisbeti'
@@ -332,10 +332,19 @@ if 'b' in st.session_state:
     st.markdown("---")
     st.markdown("## Metriklər Nə Deməkdir?")
 
+    if cfg.get('protected') == 'race':
+        _priv_lbl   = 'Caucasian'
+        _unpriv_lbl = 'African-American'
+        _di_desc    = 'African-American məhkumlar Caucasian məhkumlara nisbətən ədalətsiz mənfi proqnoz alır.'
+    else:
+        _priv_lbl   = 'Kişi'
+        _unpriv_lbl = 'Qadın'
+        _di_desc    = 'Qadınlar kişilərə nisbətən ədalətsiz mənfi proqnoz alır.'
+
     mc1, mc2, mc3 = st.columns(3)
     with mc1:
         st.error("**DI < 0.8** → Qərəzli")
-        st.write("Qadınlar kişilərə nisbətən ədalətsiz mənfi proqnoz alır.")
+        st.write(_di_desc)
     with mc2:
         st.warning("**DI 0.8–1.0** → Qəbul edilən hüdud")
         st.write("ABŞ Equal Employment qanununa görə minimum tələb.")
@@ -344,9 +353,9 @@ if 'b' in st.session_state:
         st.write("Hər iki qrup eyni ehtimalla müsbət proqnoz alır.")
 
     st.info(
-        "**Disparate Impact:** DI = P(müsbət | Qadın) ÷ P(müsbət | Kişi)\n\n"
-        "**Statistical Parity:** P(müsbət | Qadın) − P(müsbət | Kişi) → 0-a yaxın olmalıdır\n\n"
-        "**Equal Opportunity:** TPR(Qadın) − TPR(Kişi) → 0-a yaxın olmalıdır"
+        f"**Disparate Impact:** DI = P(müsbət | {_unpriv_lbl}) ÷ P(müsbət | {_priv_lbl})\n\n"
+        f"**Statistical Parity:** P(müsbət | {_unpriv_lbl}) − P(müsbət | {_priv_lbl}) → 0-a yaxın olmalıdır\n\n"
+        f"**Equal Opportunity:** TPR({_unpriv_lbl}) − TPR({_priv_lbl}) → 0-a yaxın olmalıdır"
     )
 
     # ── SHAP ──────────────────────────────────────────────────────────────────
