@@ -367,6 +367,59 @@ if 'b' in st.session_state:
         f"**Equal Opportunity:** TPR({_unpriv_lbl}) − TPR({_priv_lbl}) → 0-a yaxın olmalıdır"
     )
 
+    # ── Korrelyasiya Istilik Xəritəsi ────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("## 🌡️ Xüsusiyyətlər Arası Korrelyasiya")
+    st.caption("Qorunan atributla güclü korrelyasiyaya malik xüsusiyyətlər proksi dəyişən kimi qərəzi gizlədə bilər.")
+
+    _hm_raw = st.session_state.get('preview_b')
+    if _hm_raw is not None:
+        _hm_df = _hm_raw.copy()
+
+        if 'race' in _hm_df.columns:
+            _hm_df['race'] = _hm_df['race'].map({'Caucasian': 1, 'African-American': 0})
+        if 'sex' in _hm_df.columns:
+            _hm_df['sex'] = _hm_df['sex'].map({'Male': 1, 'Female': 0})
+        if 'income' in _hm_df.columns:
+            _hm_df['income'] = _hm_df['income'].str.rstrip('.').map({'>50K': 1, '<=50K': 0})
+
+        _num_df = _hm_df.select_dtypes(include=['number']).dropna(axis=1)
+
+        if len(_num_df.columns) > 14:
+            _num_df = _num_df.iloc[:, :14]
+
+        _corr = _num_df.corr().round(2)
+        _cols  = _corr.columns.tolist()
+
+        _fig_hm = go.Figure(go.Heatmap(
+            z=_corr.values.tolist(),
+            x=_cols,
+            y=_cols,
+            colorscale='RdBu',
+            zmid=0, zmin=-1, zmax=1,
+            text=[[f"{v:.2f}" for v in row] for row in _corr.values],
+            texttemplate="%{text}",
+            textfont=dict(size=9),
+            colorbar=dict(title='r', thickness=14),
+        ))
+        _fig_hm.update_layout(
+            height=520,
+            margin=dict(l=10, r=10, t=10, b=10),
+            xaxis=dict(tickangle=-40, tickfont=dict(size=10)),
+            yaxis=dict(tickfont=dict(size=10), autorange='reversed'),
+        )
+        st.plotly_chart(_fig_hm, use_container_width=True)
+
+        st.warning(
+            "**Proksi Dəyişənlər və Dolayı Ayrı-seçkilik:** "
+            "Maşın öyrənməsi modeli `race` və ya `sex` sütununu birbaşa istifadə etməsə belə, "
+            "bu atributlarla güclü korrelyasiyası olan digər xüsusiyyətlər (yaş, risk balı, əvvəlki cinayətlər) "
+            "qərəzi dolayı yolla modelə ötürə bilər. "
+            "Qırmızı hüceyrələr güclü müsbət, mavi hüceyrələr güclü mənfi korrelyasiyanı göstərir. "
+            "Qorunan atributun sütununa baxın — hansı xüsusiyyətlərin onunla yüksək korrelyasiyası var? "
+            "Bunlar **proksi dəyişənlərdir** və gizli qərəzin əsas mənbəyidir."
+        )
+
     # ── SHAP ──────────────────────────────────────────────────────────────────
     st.markdown("---")
     st.markdown("## 🔍 SHAP — Model Qərarlarının İzahı (XAI)")
