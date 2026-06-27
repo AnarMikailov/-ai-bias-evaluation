@@ -43,13 +43,13 @@ def _dataset_info(df, filename=""):
         unpriv_rate  = f"{(df[df['race']=='African-American']['yeniden_cinayat'].mean()*100):.1f}%"
         rate_label   = 'Yeniden cinayat nisbeti'
     else:
-        protected    = 'sex (Cinsiyyet)'
-        label        = 'income (Gelir > 50K$)'
-        priv_grp     = 'Kisi (Male)'
-        unpriv_grp   = 'Qadin (Female)'
-        task         = 'Sexsin illik gelirinin 50.000$-dan cox olub-olmadigini proqnozlasdir'
-        source       = 'UCI ML Repository — Adult Census Income (1994 ABŞ sayiyaalma melumati)'
-        bias_type    = 'Gender qerezi — qadin ishciler eyni ise gore kisi ishcilerden az qazanir'
+        protected    = 'sex (Cinsiyyət)'
+        label        = 'income (Gəlir > 50K$)'
+        priv_grp     = 'Kişi (Male)'
+        unpriv_grp   = 'Qadın (Female)'
+        task         = 'Şəxsin illik gəlirinin 50.000$-dan çox olub-olmadığını proqnozlaşdır'
+        source       = 'UCI ML Repository — Adult Census Income (1994 ABŞ sayıyaalma məlumatı)'
+        bias_type    = 'Gender qərəzi — qadın işçilər eyni işə görə kişi işçilərdən az qazanır'
         priv_rate    = f"{(df[df['sex']=='Male']['income'].str.rstrip('.').eq('>50K').mean()*100):.1f}%"
         unpriv_rate  = f"{(df[df['sex']=='Female']['income'].str.rstrip('.').eq('>50K').mean()*100):.1f}%"
         rate_label   = '>50K$ qazananlar'
