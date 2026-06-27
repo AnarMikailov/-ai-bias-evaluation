@@ -1,3 +1,4 @@
+import gc
 import os
 import numpy as np
 import pandas as pd
@@ -72,9 +73,9 @@ def _csv_to_aif360(df: pd.DataFrame, cfg: dict) -> BinaryLabelDataset:
 
     cat_cols = [c for c in cfg['categorical'] if c in df.columns]
     if cat_cols:
-        df = pd.get_dummies(df, columns=cat_cols, dtype=np.float64)
+        df = pd.get_dummies(df, columns=cat_cols, dtype=np.float32)
 
-    arr = df.to_numpy(dtype=np.float64)
+    arr = df.to_numpy(dtype=np.float32)
     df  = pd.DataFrame(arr, columns=list(df.columns))
 
     return BinaryLabelDataset(
@@ -215,5 +216,8 @@ def analyze_from_csvs(biased_df: pd.DataFrame, unbiased_df: pd.DataFrame):
     # SHAP
     biased['shap']   = _compute_shap(b_model, b_scaler, b_train, b_test)
     unbiased['shap'] = _compute_shap(u_model, u_scaler, u_train, u_test)
+
+    del b_ds, u_ds, b_train, b_test, u_train, u_test, b_pred, u_pred
+    gc.collect()
 
     return biased, unbiased

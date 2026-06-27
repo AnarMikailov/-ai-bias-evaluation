@@ -1,8 +1,11 @@
+import gc
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 from bias_analysis import analyze_from_csvs
+
+MAX_ROWS = 15_000
 
 st.set_page_config(
     page_title="Alqoritmik Qərəzliyin Qiymətləndirilməsi",
@@ -228,7 +231,13 @@ if biased_file and unbiased_file:
             unbiased_file.seek(0)
             biased_df   = pd.read_csv(biased_file)
             unbiased_df = pd.read_csv(unbiased_file)
+            if len(biased_df) > MAX_ROWS:
+                biased_df = biased_df.sample(MAX_ROWS, random_state=42).reset_index(drop=True)
+            if len(unbiased_df) > MAX_ROWS:
+                unbiased_df = unbiased_df.sample(MAX_ROWS, random_state=42).reset_index(drop=True)
             b, u = analyze_from_csvs(biased_df, unbiased_df)
+            del biased_df, unbiased_df
+            gc.collect()
             st.session_state['b'] = b
             st.session_state['u'] = u
         st.success("✅ Analiz tamamlandı!")
