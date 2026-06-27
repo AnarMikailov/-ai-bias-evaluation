@@ -328,65 +328,6 @@ if 'b' in st.session_state:
     fig2.update_layout(height=380, yaxis_title="Disparate Impact", showlegend=False)
     st.plotly_chart(fig2, use_container_width=True)
 
-    # ── Radar Chart ───────────────────────────────────────────────────────
-    st.markdown("---")
-    st.markdown("## 🕸️ Model Müqayisəsi — Radar Diaqramı")
-    st.caption("Hər oxda 100-ə yaxın = daha yaxşı. Ədalət metrikaları ideal dəyərdən uzaqlaşdıqca xal azalır.")
-
-    def _fair_score(val, ideal=0.0):
-        return max(0.0, (1.0 - abs(val - ideal)) * 100)
-
-    _radar_cats = ['Dəqiqlik', 'Disparate\nImpact', 'Statistical\nParity',
-                   'Equal\nOpportunity', 'Avg. Odds\nDiff.']
-    _b_vals = [
-        b['accuracy'] * 100,
-        _fair_score(b['disparate_impact'], ideal=1.0),
-        _fair_score(b['statistical_parity'], ideal=0.0),
-        _fair_score(b['equal_opportunity'], ideal=0.0),
-        _fair_score(b['avg_odds_diff'], ideal=0.0),
-    ]
-    _u_vals = [
-        u['accuracy'] * 100,
-        _fair_score(u['disparate_impact'], ideal=1.0),
-        _fair_score(u['statistical_parity'], ideal=0.0),
-        _fair_score(u['equal_opportunity'], ideal=0.0),
-        _fair_score(u['avg_odds_diff'], ideal=0.0),
-    ]
-
-    _fig_radar = go.Figure()
-    _fig_radar.add_trace(go.Scatterpolar(
-        r=_b_vals + [_b_vals[0]],
-        theta=_radar_cats + [_radar_cats[0]],
-        fill='toself',
-        fillcolor='rgba(211, 47, 47, 0.15)',
-        line=dict(color='#D32F2F', width=2),
-        name='🔴 Qərəzli Model',
-    ))
-    _fig_radar.add_trace(go.Scatterpolar(
-        r=_u_vals + [_u_vals[0]],
-        theta=_radar_cats + [_radar_cats[0]],
-        fill='toself',
-        fillcolor='rgba(46, 125, 50, 0.15)',
-        line=dict(color='#2E7D32', width=2),
-        name='🟢 Qərəzsiz Model',
-    ))
-    _fig_radar.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=10)),
-            angularaxis=dict(tickfont=dict(size=12)),
-        ),
-        legend=dict(orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
-        height=500,
-        margin=dict(t=40, b=80),
-    )
-    st.plotly_chart(_fig_radar, use_container_width=True)
-    st.info(
-        "**Necə oxumaq olar:** Hər ox bir ölçüdür — fiqur nə qədər böyükdürsə, model bir o qədər yaxşıdır. "
-        "Dəqiqlik birbaşa faiz kimi göstərilir. Ədalət metrikaları (Disparate Impact, Statistical Parity, "
-        "Equal Opportunity, Avg. Odds Diff.) ideal dəyərə (0 və ya 1) nə qədər yaxındırsa, "
-        "100-ə yaxın xal alır. Yaşıl fiqur qırmızıdan böyükdürsə — qərəzsizləşdirmə uğurlu olub."
-    )
-
     # ── İzahat ────────────────────────────────────────────────────────────
     st.markdown("---")
     st.markdown("## Metriklər Nə Deməkdir?")
